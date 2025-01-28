@@ -36,11 +36,14 @@ char *getMessage(int file_descriptor) {
 
     char *end;
 
-    while ( strcmp(end = (char*) getline(&aux, &size, socket_stream), "\r\n") == 0 ) {
-
-        //TODO
-
+    while ( (end = (char*) getline(&aux, &size, socket_stream)) > 0 ) {
+        if( strcmp(aux, "\r\n") ) {
+            break;
+        }
+        fprintf(stdout , "%s", aux);
     }
+
+    return "A";
 
 }
 
@@ -95,6 +98,9 @@ int main() {
                 fprintf(stdout, "Hello proccess with PID %i", pid);
 
                 // Then, get the message opening a stream associated with conn_s file descriptor (fdopen)
+                while(1) {
+                    getMessage(pid);
+                }
 
             }
 
