@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -25,8 +26,10 @@ int main() {
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     addr.sin_port = htons(port);
+
+    socklen_t addr_size = sizeof(addr);
     
-    if( bind(lsocket, (struct sockaddr*) &addr, sizeof(addr)) < 0 ) {
+    if( bind(lsocket, (struct sockaddr*) &addr, addr_size) < 0 ) {
         fprintf(stderr, "Error binding the socket");
         exit(EXIT_FAILURE);
     }
@@ -52,7 +55,7 @@ int main() {
         if (pid == 0) {
 
             while (1) {
-                if ( conn_s = accept(lsocket, (struct sockaddr *) &addr, sizeof(addr)) == -1 ) {
+                if ( conn_s = accept(lsocket, (struct sockaddr *) &addr, &addr_size) == -1 ) {
                     fprintf(stderr, "Failes accepting a connection");
                     exit(EXIT_FAILURE);
                 }
