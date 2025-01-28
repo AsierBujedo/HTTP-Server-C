@@ -99,7 +99,7 @@ int main() {
 
                 // Then, get the message opening a stream associated with conn_s file descriptor (fdopen)
                 while(1) {
-                    getMessage(pid);
+                    getMessage(conn_s);
                 }
 
             }
