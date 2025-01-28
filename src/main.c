@@ -11,8 +11,40 @@
 
 int lsocket;
 
-int main() {
+char *getMessage(int file_descriptor) {
+    FILE *socket_stream;
 
+    // Open the stream with read mode
+    if( (socket_stream = fdopen(file_descriptor, "r")) == NULL ) {
+        fprintf(stderr, "Failed opening the socket stream");
+        exit(EXIT_FAILURE);
+    }
+
+    size_t size = 1;
+    char *line;
+    char *aux;
+
+    if( (line = (char*) malloc(sizeof(char) * size)) == NULL ) {
+        fprintf(stderr, "Failed allocating memory");
+        exit(EXIT_FAILURE);
+    }
+
+    if( (aux = (char*) malloc(sizeof(char) * size)) == NULL ) {
+        fprintf(stderr, "Failed allocating memory");
+        exit(EXIT_FAILURE);
+    }
+
+    char *end;
+
+    while ( strcmp(end = (char*) getline(&aux, &size, socket_stream), "\r\n") == 0 ) {
+
+        //TODO
+
+    }
+
+}
+
+int main() {
     int conn_s;
     short int port = 8080;
     struct sockaddr_in addr;
@@ -29,7 +61,7 @@ int main() {
 
     socklen_t addr_size = sizeof(addr);
     
-    if( bind(lsocket, (struct sockaddr*) &addr, addr_size) < 0 ) {
+    if( (bind(lsocket, (struct sockaddr*) &addr, addr_size)) < 0 ) {
         fprintf(stderr, "Error binding the socket");
         exit(EXIT_FAILURE);
     }
@@ -59,6 +91,8 @@ int main() {
                     fprintf(stderr, "Failes accepting a connection");
                     exit(EXIT_FAILURE);
                 }
+
+                fprintf(stdout, "Hello proccess with PID %i", pid);
 
                 // Then, get the message opening a stream associated with conn_s file descriptor (fdopen)
 
