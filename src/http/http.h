@@ -8,6 +8,7 @@ typedef struct {
 } request;
 
 char *getMessage(int file_descriptor);
-int sendResponse(FILE* sstream);
+int sendResponse(FILE *sstream);
+void msgToReq(request *dest, char *msg, int msgSize);
 
 #endif /* HTTP_H_ */

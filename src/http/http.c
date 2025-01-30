@@ -73,7 +73,7 @@ char *getMessage(int file_descriptor) {
     }
 
     // Print the collected message
-    fprintf(stdout, "%s", msg);
+    fprintf(stdout, "%s", headers);
 
     free(headers);
     free(aux);
@@ -88,4 +88,48 @@ int sendResponse(FILE *sstream) {
     }
     fflush(sstream);
     return 0;
+}
+
+/* Receives a header and returns a request struct */
+void msgToReq(request *dest, char *msg, int msgSize) {
+    size_t char_count = 0;
+    char *aux = malloc(sizeof(char));
+
+    if(aux == NULL) {
+        fprintf(stderr, "Failed allocating memory\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for(int i=0; i<=msgSize; i++) {
+        char_count++;
+        aux = realloc(aux, sizeof(char) * char_count);
+
+        if(aux == NULL) {
+            fprintf(stderr, "Failed reallocating memory\n");
+            exit(EXIT_FAILURE);
+        }
+
+        aux[i] = msg[i];
+        if(msg[i] == ' ') {
+            dest->method = malloc(sizeof(char) * char_count);
+
+            if (dest->method == NULL) {
+                fprintf(stderr, "Failed allocating memory\n");
+                exit(EXIT_FAILURE);
+            }
+
+            dest->method = strcpy(dest->method, aux);
+            free(aux);
+            aux = malloc(sizeof(char));
+
+            if(aux == NULL) {
+                fprintf(stderr, "Failed allocating memory\n");
+                exit(EXIT_FAILURE);
+            }
+
+            char_count = 0;
+
+            //TODO
+        }
+    }
 }
