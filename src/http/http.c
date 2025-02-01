@@ -12,7 +12,7 @@ const char* CODE200 = "HTTP/1.1 200 OK\n";
 
 // Reads data from a socket (file_descriptor), collects lines until "\r\n",
 // and sends a response back
-char *getMessage(int file_descriptor) {
+char *getMessage(int file_descriptor, char *h_msg, size_t *h_size) {
     FILE *sstream;
 
     // Open the socket as a read-only stream
@@ -30,6 +30,11 @@ char *getMessage(int file_descriptor) {
     if (getline(&headers, &size, sstream) == -1) {
         fprintf(stderr, "Failed setting the headers\n");
         exit(EXIT_FAILURE);
+    }
+    
+    int h_char_count = 0;
+    while (headers[h_char_count] != '\0') {
+        h_char_count++;
     }
 
     // Initialize msg buffer
@@ -72,13 +77,15 @@ char *getMessage(int file_descriptor) {
         fprintf(stderr, "Failed sending a response. The program will not end.\n");
     }
 
-    // Print the collected message
-    fprintf(stdout, "%s", headers);
+    free(h_msg);
+    h_msg = malloc(sizeof(char) * h_char_count);
+    *h_size = h_char_count;
+    h_msg = strcpy(h_msg, headers);
 
     free(headers);
     free(aux);
 
-    return msg;
+    return h_msg;
 }
 
 // Writes the 200 OK response to the stream
@@ -91,45 +98,65 @@ int sendResponse(FILE *sstream) {
 }
 
 /* Receives a header and returns a request struct */
-void msgToReq(request *dest, char *msg, int msgSize) {
-    size_t char_count = 0;
-    char *aux = malloc(sizeof(char));
+void msgToReq(request *dest, char *msg, int msgSize, int step) {
 
-    if(aux == NULL) {
-        fprintf(stderr, "Failed allocating memory\n");
-        exit(EXIT_FAILURE);
-    }
+    fprintf(stdout, msg);
 
-    for(int i=0; i<=msgSize; i++) {
-        char_count++;
-        aux = realloc(aux, sizeof(char) * char_count);
+    if(step < 3 && msg != NULL && dest != NULL) {
+        for (int i = 0; i < msgSize; i++) {
+            if (msg[i] == ' ' || msg[i] == '\0' || msg[i] == '\r' || msg[i] == '\n') {
+                switch (step) {
+                    case 0:
+                        dest->method = malloc(sizeof(char) * (i + 1));
+                        if (dest->method == NULL) {
+                            fprintf(stderr, "Failed allocating memory for method\n");
+                            exit(EXIT_FAILURE);
+                        }
+                        dest->method = strncpy(dest->method, msg, i);
+                        dest->method[i] = '\0';
+                        step++;
+                        break;
+                    case 1:
+                        dest->route = malloc(sizeof(char) * (i + 1));
+                        if (dest->route == NULL) {
+                            fprintf(stderr, "Failed allocating memory for route\n");
+                            exit(EXIT_FAILURE);
+                        }
+                        dest->route = strncpy(dest->route, msg, i);
+                        dest->route[i] = '\0';
+                        step++;
+                        break;
+                    case 2:
+                        dest->version = malloc(sizeof(char) * (i + 1));
+                        if (dest->version == NULL) {
+                            fprintf(stderr, "Failed allocating memory for version\n");
+                            exit(EXIT_FAILURE);
+                        }
+                        dest->version = strncpy(dest->version, msg, i);
+                        dest->version[i] = '\0';
+                        step++;
+                        break;
+                    default:
+                        break;
+                }
 
-        if(aux == NULL) {
-            fprintf(stderr, "Failed reallocating memory\n");
-            exit(EXIT_FAILURE);
-        }
+                char *aux = malloc(sizeof(char) * (msgSize - i - 1));
+                if (aux == NULL) {
+                    fprintf(stderr, "Failed allocating memory\n");
+                    exit(EXIT_FAILURE);
+                }
 
-        aux[i] = msg[i];
-        if(msg[i] == ' ') {
-            dest->method = malloc(sizeof(char) * char_count);
+                // COPY TO AUX FROM MSG[I + 1] TO MSG[MSGSIZE]
+                int counter = 0;
+                for (int j = i + 1; j < msgSize; j++) {
+                    aux[counter] = msg[j];
+                    counter++;
+                }
 
-            if (dest->method == NULL) {
-                fprintf(stderr, "Failed allocating memory\n");
-                exit(EXIT_FAILURE);
+                msgToReq(dest, aux, msgSize - i - 1, step);
+                free(aux);
+                break;
             }
-
-            dest->method = strcpy(dest->method, aux);
-            free(aux);
-            aux = malloc(sizeof(char));
-
-            if(aux == NULL) {
-                fprintf(stderr, "Failed allocating memory\n");
-                exit(EXIT_FAILURE);
-            }
-
-            char_count = 0;
-
-            //TODO
         }
     }
 }

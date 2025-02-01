@@ -21,7 +21,19 @@ int childs;
 void* connectionHandler(void* arg) {
     int conn_s = *(int*)arg;  
     free(arg);
-    getMessage(conn_s);
+
+    request *req = malloc(sizeof(request));
+    char *msg = malloc(sizeof(char));
+    size_t *size = malloc(sizeof(size_t));
+
+    getMessage(conn_s, msg, size);
+
+    fprintf(stdout, "%i\n", *size);
+
+    msgToReq(req, msg, *size, 0);
+
+    fprintf(stdout, "Method: %s\nRoute: %s\nVersion: %s\n", req->method, req->route, req->version);
+
     close(conn_s);
 }
 
@@ -43,7 +55,7 @@ void handleInterrupt(int sig) {
 
 int main() {
     int conn_s;
-    short int port = 8017;
+    short int port = 8016;
     struct sockaddr_in addr;
 
     signal(SIGINT, handleInterrupt);
