@@ -39,7 +39,7 @@ char *getMessage(int file_descriptor, char *h_msg, size_t *h_size) {
 
     // Initialize msg buffer
     size_t msg_size = 1;
-    msg = (char *)malloc(msg_size);
+    msg = (char *) malloc(msg_size);
     if (msg == NULL) {
         fprintf(stderr, "Failed allocating memory for message\n");
         exit(EXIT_FAILURE);

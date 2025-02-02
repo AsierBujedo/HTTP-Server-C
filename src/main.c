@@ -26,9 +26,9 @@ void* connectionHandler(void* arg) {
     char *msg = malloc(sizeof(char));
     size_t *size = malloc(sizeof(size_t));
 
-    getMessage(conn_s, msg, size);
+    msg = getMessage(conn_s, msg, size);
 
-    fprintf(stdout, "%i\n", *size);
+    fprintf(stdout, "%s\n%i\n", msg, *size);
 
     msgToReq(req, msg, *size, 0);
 
@@ -55,7 +55,7 @@ void handleInterrupt(int sig) {
 
 int main() {
     int conn_s;
-    short int port = 8016;
+    short int port = 8080;
     struct sockaddr_in addr;
 
     signal(SIGINT, handleInterrupt);
