@@ -92,3 +92,18 @@ void endThread(thread_pool *thpool, pthread_t *thread) {
         }
     }
 }
+
+/**
+ * @brief Terminates all threads in the thread pool.
+ *
+ * This function iterates through all the threads in the thread pool and cancels each one.
+ * After all threads are cancelled, the number of threads in the pool is set to 0.
+ *
+ * @param thpool Pointer to the thread pool structure.
+ */
+void endAllThreads(thread_pool *thpool) {
+    for (int i = 0; i < thpool->num_threads; i++) {
+        pthread_cancel(*thpool->pool[i]);
+    }
+    thpool->num_threads = 0;
+}

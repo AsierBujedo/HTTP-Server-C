@@ -10,14 +10,14 @@
 #include <arpa/inet.h>
 
 #include "http/http.h"
-// #include "thread_pool/tpool.h"
+#include "thread_pool/tpool.h"
 
 #define MAXCONNS 10
 
 int lsocket;
 int *conn_pool;
-pthread_t *thread_pool;
 int childs;
+thread_pool *pool;
 
 void* connectionHandler(void* arg) {
     int conn_s = *(int*)arg;  
@@ -46,17 +46,14 @@ void handleInterrupt(int sig) {
     }
     free(conn_pool);
 
-    for (int i = 0; i < childs; i++) {
-        pthread_join(thread_pool[i], NULL);
-    }
-    free(thread_pool);
+    endAllThreads(pool);
 
     exit(1);
 }
 
 int main() {
     int conn_s;
-    short int port = 8080;
+    short int port = 8000;
     struct sockaddr_in addr;
 
     signal(SIGINT, handleInterrupt);
@@ -83,48 +80,22 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
+    pthread_mutex_t mutex;
+    pool = initPool(&mutex);
     childs = 0;
-
     while (childs < MAXCONNS) {
-        if ((conn_s = accept(lsocket, (struct sockaddr*)&addr, &addr_size)) > 0) {
+        if((conn_s = accept(lsocket, (struct sockaddr*)&addr, &addr_size)) > 0) {
             childs++;
-
-            int* conn_copy = malloc(sizeof(int));
-            if (conn_copy == NULL) {
-                fprintf(stderr, "Failed to allocate memory for conn_copy\n");
-                exit(EXIT_FAILURE);
-            }
-            *conn_copy = conn_s;
-
-            int* temp_conn_pool = realloc(conn_pool, sizeof(int) * childs);
-            if (temp_conn_pool == NULL) {
-                fprintf(stderr, "Failed reallocating memory for conn_pool\n");
-                free(conn_copy);
-                exit(EXIT_FAILURE);
-            }
-            conn_pool = temp_conn_pool;
-
-            conn_pool[childs - 1] = conn_s;
-
-            pthread_t* temp_thread_pool = realloc(thread_pool, sizeof(pthread_t) * childs);
-            if (temp_thread_pool == NULL) {
-                fprintf(stderr, "Failed reallocating memory for thread_pool\n");
-                free(conn_copy);
-                exit(EXIT_FAILURE);
-            }
-            thread_pool = temp_thread_pool;
-
-            pthread_t th;
-            thread_pool[childs - 1] = th;
-
-            fprintf(stdout, "Current number of threads: %i\n", childs);
-
-            if (pthread_create(&th, NULL, connectionHandler, conn_copy) != 0) {
-                fprintf(stderr, "Failed to create thread\n");
-                free(conn_copy);
-                exit(EXIT_FAILURE);
-            }
         }
+
+        pthread_t *th = malloc(sizeof(pthread_t));
+        int *conn_s_ptr = malloc(sizeof(int));
+        *conn_s_ptr = conn_s;
+        if(pthread_create(th, NULL, connectionHandler, (void*) conn_s_ptr) != 0) {
+            fprintf(stderr, "Failed to create thread\n");
+            exit(EXIT_FAILURE);
+        }
+        addThread(pool, th);
     }
     return 0;
 }
