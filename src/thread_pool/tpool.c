@@ -41,7 +41,7 @@ thread_pool* initPool(pthread_mutex_t *mutex) {
  */
 void addThread(thread_pool *thpool, pthread_t *thread) {
     thpool->num_threads++;
-    thpool->pool = realloc(thpool->pool, sizeof(pthread_t) * thpool->num_threads);
+    thpool->pool = realloc(*thpool->pool, sizeof(pthread_t) * thpool->num_threads);
     if(thpool->pool == NULL) {
         fprintf(stderr, "Failed reallocating memory");
         exit(EXIT_FAILURE);
@@ -79,8 +79,8 @@ void backCopy(thread_pool *thpool, int idx) {
  */
 void endThread(thread_pool *thpool, pthread_t *thread) {
     for (int i = 0; i < thpool->num_threads; i++) {
-        if(pthread_equal(thpool->pool[i], *thread)) {
-            pthread_cancel(thread);
+        if(pthread_equal(*(thpool->pool[i]), *thread)) {
+            pthread_cancel(*thread);
             free(thread);
             thpool->num_threads--;
             backCopy(thpool, i);
