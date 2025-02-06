@@ -59,7 +59,7 @@ void addThread(thread_pool *thpool, pthread_t *thread) {
  * @param idx The index from which to start shifting elements.
  */
 void backCopy(thread_pool *thpool, int idx) {
-    for (int i = idx; i < thpool->pool; i++) {
+    for (int i = idx; i < thpool->num_threads; i++) {
         thpool->pool[i] = thpool->pool[i+1];
     }
 }
