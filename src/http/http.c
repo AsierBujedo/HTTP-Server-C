@@ -100,7 +100,7 @@ int sendResponse(FILE *sstream) {
 /* Receives a header and returns a request struct */
 void msgToReq(request *dest, char *msg, int msgSize, int step) {
 
-    fprintf(stdout, msg);
+    fprintf(stdout, "%s\n", msg);
 
     if(step < 3 && msg != NULL && dest != NULL) {
         for (int i = 0; i < msgSize; i++) {
