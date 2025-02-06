@@ -28,9 +28,9 @@ void* connectionHandler(void* arg) {
 
     msg = getMessage(conn_s, msg, size);
 
-    fprintf(stdout, "%s\n%i\n", msg, *size);
+    fprintf(stdout, "%s\n%i\n", msg, (int) *size);
 
-    msgToReq(req, msg, *size, 0);
+    msgToReq(req, msg, (int) *size, 0);
 
     fprintf(stdout, "Method: %s\nRoute: %s\nVersion: %s\n", req->method, req->route, req->version);
 
