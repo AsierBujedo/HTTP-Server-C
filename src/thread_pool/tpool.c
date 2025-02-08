@@ -13,7 +13,7 @@
  *
  * @note The function will terminate the program with an error message if memory allocation fails.
  */
-thread_pool* initPool(pthread_mutex_t *mutex) {
+thread_pool* initPool() {
     thread_pool *thpool = malloc(sizeof(thread_pool));
     if(thpool == NULL) {
         fprintf(stderr, "Failed allocating memory");
@@ -25,7 +25,6 @@ thread_pool* initPool(pthread_mutex_t *mutex) {
         exit(EXIT_FAILURE);
     }
     thpool->num_threads = 0;
-    thpool->mutex = mutex;
     return thpool;
 }
 
@@ -41,11 +40,12 @@ thread_pool* initPool(pthread_mutex_t *mutex) {
  */
 void addThread(thread_pool *thpool, pthread_t *thread) {
     thpool->num_threads++;
-    thpool->pool = realloc(*thpool->pool, sizeof(pthread_t) * thpool->num_threads);
+    thpool->pool = realloc(thpool->pool, sizeof(pthread_t) * thpool->num_threads);
     if(thpool->pool == NULL) {
         fprintf(stderr, "Failed reallocating memory");
         exit(EXIT_FAILURE);
     }
+    thpool->pool[thpool->num_threads - 1] = thread;
 }
 
 /**
@@ -103,7 +103,9 @@ void endThread(thread_pool *thpool, pthread_t *thread) {
  */
 void endAllThreads(thread_pool *thpool) {
     for (int i = 0; i < thpool->num_threads; i++) {
-        pthread_cancel(*thpool->pool[i]);
+        pthread_join((pthread_t) *thpool->pool[i], NULL);
+        free(thpool->pool[i]);
+        fprintf(stdout, "Thread %i ended.\n", i);
     }
     thpool->num_threads = 0;
 }

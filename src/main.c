@@ -16,7 +16,7 @@
 
 int lsocket;
 int *conn_pool;
-int childs;
+int childs = 0;
 thread_pool *pool;
 
 void* connectionHandler(void* arg) {
@@ -34,8 +34,6 @@ void* connectionHandler(void* arg) {
     msgToReq(req, msg, (int) *size, 0);
 
     fprintf(stdout, "Method: %s\nRoute: %s\nVersion: %s\n", req->method, req->route, req->version);
-
-    close(conn_s);
 }
 
 void handleInterrupt(int sig) {
@@ -46,14 +44,17 @@ void handleInterrupt(int sig) {
     }
     free(conn_pool);
 
+    fprintf(stdout, "All connections have been closed\nEnding all threads\n");
+
     endAllThreads(pool);
+    free(pool);
 
     exit(1);
 }
 
 int main() {
     int conn_s;
-    short int port = 8000;
+    short int port = 8090;
     struct sockaddr_in addr;
 
     signal(SIGINT, handleInterrupt);
@@ -80,12 +81,16 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    pthread_mutex_t mutex;
-    pool = initPool(&mutex);
-    childs = 0;
+    pool = initPool();
     while (childs < MAXCONNS) {
         if((conn_s = accept(lsocket, (struct sockaddr*)&addr, &addr_size)) > 0) {
             childs++;
+            conn_pool = realloc(conn_pool, sizeof(int) * childs);
+            if(conn_pool == NULL) {
+                fprintf(stderr, "Failed reallocating memory");
+                exit(EXIT_FAILURE);
+            }
+            conn_pool[childs - 1] = conn_s;
         }
 
         pthread_t *th = malloc(sizeof(pthread_t));

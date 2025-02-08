@@ -46,8 +46,8 @@ char *getMessage(int file_descriptor, char *h_msg, size_t *h_size) {
     }
     msg[0] = '\0';
 
-    // Continuously read lines until reaching "\r\n"
-    // Expand msg buffer as needed
+    // Continuously read lines until reaches "\r\n"
+    // Expands msg buffer as needed
     size_t aux_size = 0;
     int ln_bytes;
     while ((ln_bytes = getline(&aux, &aux_size, sstream)) > 0) {
