@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "http.h"
+#include "response_handler/rhandler.h"
 
 // Specifies a simple HTTP 200 response line
 const char* CODE200 = "HTTP/1.1 200 OK\n";
@@ -99,9 +100,6 @@ int sendResponse(FILE *sstream) {
 
 /* Receives a header and returns a request struct */
 void msgToReq(request *dest, char *msg, int msgSize, int step) {
-
-    fprintf(stdout, "%s\n", msg);
-
     if(step < 3 && msg != NULL && dest != NULL) {
         for (int i = 0; i < msgSize; i++) {
             if (msg[i] == ' ' || msg[i] == '\0' || msg[i] == '\r' || msg[i] == '\n') {

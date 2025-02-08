@@ -23,17 +23,18 @@ void* connectionHandler(void* arg) {
     int conn_s = *(int*)arg;  
     free(arg);
 
-    request *req = malloc(sizeof(request));
-    char *msg = malloc(sizeof(char));
-    size_t *size = malloc(sizeof(size_t));
+    while(1) { //TODO: Autoclose connections needs to be implemented
+        request *req = malloc(sizeof(request));
+        char *msg = malloc(sizeof(char));
+        size_t *size = malloc(sizeof(size_t));
 
-    msg = getMessage(conn_s, msg, size);
+        msg = getMessage(conn_s, msg, size);
+        msgToReq(req, msg, (int) *size, 0);
 
-    fprintf(stdout, "%s\n%i\n", msg, (int) *size);
-
-    msgToReq(req, msg, (int) *size, 0);
-
-    fprintf(stdout, "Method: %s\nRoute: %s\nVersion: %s\n", req->method, req->route, req->version);
+        free(req);
+        free(msg);
+        free(size);
+    }
 }
 
 void handleInterrupt(int sig) {
@@ -43,8 +44,6 @@ void handleInterrupt(int sig) {
         close(conn_pool[i]);
     }
     free(conn_pool);
-
-    fprintf(stdout, "All connections have been closed\nEnding all threads\n");
 
     endAllThreads(pool);
     free(pool);
