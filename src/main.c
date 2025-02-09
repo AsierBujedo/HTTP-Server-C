@@ -23,18 +23,16 @@ void* connectionHandler(void* arg) {
     int conn_s = *(int*)arg;  
     free(arg);
 
-    while(1) { //TODO: Autoclose connections needs to be implemented
-        request *req = malloc(sizeof(request));
-        char *msg = malloc(sizeof(char));
-        size_t *size = malloc(sizeof(size_t));
+    request *req = malloc(sizeof(request));
+    char *msg = malloc(sizeof(char));
+    size_t *size = malloc(sizeof(size_t));
 
-        msg = getMessage(conn_s, msg, size);
-        msgToReq(req, msg, (int) *size, 0);
+    msg = getMessage(conn_s, msg, size);
+    msgToReq(req, msg, (int) *size, 0);
 
-        free(req);
-        free(msg);
-        free(size);
-    }
+    free(req);
+    free(msg);
+    free(size);
 }
 
 void handleInterrupt(int sig) {
@@ -53,7 +51,7 @@ void handleInterrupt(int sig) {
 
 int main() {
     int conn_s;
-    short int port = 8090;
+    short int port = 1234;
     struct sockaddr_in addr;
 
     signal(SIGINT, handleInterrupt);

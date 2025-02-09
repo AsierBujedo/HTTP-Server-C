@@ -8,9 +8,6 @@
 #include "http.h"
 #include "response_handler/rhandler.h"
 
-// Specifies a simple HTTP 200 response line
-const char* CODE200 = "HTTP/1.1 200 OK\n";
-
 // Reads data from a socket (file_descriptor), collects lines until "\r\n",
 // and sends a response back
 char *getMessage(int file_descriptor, char *h_msg, size_t *h_size) {
@@ -67,16 +64,14 @@ char *getMessage(int file_descriptor, char *h_msg, size_t *h_size) {
     }
 
     // Reopen the same file descriptor in write mode for response
-    FILE *response_stream;
-    if ((response_stream = fdopen(file_descriptor, "w")) == NULL) {
+    FILE *rstream;
+    if ((rstream = fdopen(file_descriptor, "w")) == NULL) {
         fprintf(stderr, "Failed to open socket stream for writing\n");
         exit(EXIT_FAILURE);
     }
 
-    // Send the HTTP 200 response
-    if (sendResponse(response_stream)) {
-        fprintf(stderr, "Failed sending a response. The program will not end.\n");
-    }
+    sendIndex(rstream);
+    fclose(rstream);
 
     free(h_msg);
     h_msg = malloc(sizeof(char) * h_char_count);
@@ -87,15 +82,6 @@ char *getMessage(int file_descriptor, char *h_msg, size_t *h_size) {
     free(aux);
 
     return h_msg;
-}
-
-// Writes the 200 OK response to the stream
-int sendResponse(FILE *sstream) {
-    if (fputs(CODE200, sstream) == EOF) {
-        return -1;
-    }
-    fflush(sstream);
-    return 0;
 }
 
 /* Receives a header and returns a request struct */
