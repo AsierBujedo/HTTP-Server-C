@@ -63,16 +63,6 @@ char *getMessage(int file_descriptor, char *h_msg, size_t *h_size) {
         strncat(msg, aux, ln_bytes);
     }
 
-    // Reopen the same file descriptor in write mode for response
-    FILE *rstream;
-    if ((rstream = fdopen(file_descriptor, "w")) == NULL) {
-        fprintf(stderr, "Failed to open socket stream for writing\n");
-        exit(EXIT_FAILURE);
-    }
-
-    sendIndex(rstream);
-    fclose(rstream);
-
     free(h_msg);
     h_msg = malloc(sizeof(char) * h_char_count);
     *h_size = h_char_count;

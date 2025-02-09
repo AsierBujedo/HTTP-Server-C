@@ -11,6 +11,7 @@
 
 #include "http/http.h"
 #include "thread_pool/tpool.h"
+#include "http/response_handler/rhandler.h"
 
 #define MAXCONNS 10
 
@@ -29,7 +30,8 @@ void* connectionHandler(void* arg) {
 
     msg = getMessage(conn_s, msg, size);
     msgToReq(req, msg, (int) *size, 0);
-
+    endpointGateway(conn_s, req->route);
+    
     free(req);
     free(msg);
     free(size);
@@ -51,7 +53,7 @@ void handleInterrupt(int sig) {
 
 int main() {
     int conn_s;
-    short int port = 1234;
+    short int port = 12345;
     struct sockaddr_in addr;
 
     signal(SIGINT, handleInterrupt);

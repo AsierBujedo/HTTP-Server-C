@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 
-void sendIndex(FILE* rstream);
-// void endpointGateway(char* endpoint);
-// void sendResponse();
+void sendIndex(FILE*);
+void endpointGateway(int, char*);
+void sendResponse(FILE*, char*);
+void sendFavicon(FILE*, char*);
 
 #endif // RHANDLER_H
