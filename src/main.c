@@ -11,8 +11,10 @@
 
 #include "http/http.h"
 #include "thread_pool/tpool.h"
+#include "http/response_handler/rhandler.h"
 
 #define MAXCONNS 10
+#define PORT 8000
 
 int lsocket;
 int *conn_pool;
@@ -28,12 +30,12 @@ void* connectionHandler(void* arg) {
     size_t *size = malloc(sizeof(size_t));
 
     msg = getMessage(conn_s, msg, size);
-
-    fprintf(stdout, "%s\n%i\n", msg, (int) *size);
-
     msgToReq(req, msg, (int) *size, 0);
-
-    fprintf(stdout, "Method: %s\nRoute: %s\nVersion: %s\n", req->method, req->route, req->version);
+    endpointGateway(conn_s, req->route);
+    
+    free(req);
+    free(msg);
+    free(size);
 }
 
 void handleInterrupt(int sig) {
@@ -44,8 +46,6 @@ void handleInterrupt(int sig) {
     }
     free(conn_pool);
 
-    fprintf(stdout, "All connections have been closed\nEnding all threads\n");
-
     endAllThreads(pool);
     free(pool);
 
@@ -54,7 +54,7 @@ void handleInterrupt(int sig) {
 
 int main() {
     int conn_s;
-    short int port = 8090;
+    short int port = PORT;
     struct sockaddr_in addr;
 
     signal(SIGINT, handleInterrupt);

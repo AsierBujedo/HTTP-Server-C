@@ -6,9 +6,7 @@
 #include <string.h>
 
 #include "http.h"
-
-// Specifies a simple HTTP 200 response line
-const char* CODE200 = "HTTP/1.1 200 OK\n";
+#include "response_handler/rhandler.h"
 
 // Reads data from a socket (file_descriptor), collects lines until "\r\n",
 // and sends a response back
@@ -65,18 +63,6 @@ char *getMessage(int file_descriptor, char *h_msg, size_t *h_size) {
         strncat(msg, aux, ln_bytes);
     }
 
-    // Reopen the same file descriptor in write mode for response
-    FILE *response_stream;
-    if ((response_stream = fdopen(file_descriptor, "w")) == NULL) {
-        fprintf(stderr, "Failed to open socket stream for writing\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Send the HTTP 200 response
-    if (sendResponse(response_stream)) {
-        fprintf(stderr, "Failed sending a response. The program will not end.\n");
-    }
-
     free(h_msg);
     h_msg = malloc(sizeof(char) * h_char_count);
     *h_size = h_char_count;
@@ -88,20 +74,8 @@ char *getMessage(int file_descriptor, char *h_msg, size_t *h_size) {
     return h_msg;
 }
 
-// Writes the 200 OK response to the stream
-int sendResponse(FILE *sstream) {
-    if (fputs(CODE200, sstream) == EOF) {
-        return -1;
-    }
-    fflush(sstream);
-    return 0;
-}
-
 /* Receives a header and returns a request struct */
 void msgToReq(request *dest, char *msg, int msgSize, int step) {
-
-    fprintf(stdout, "%s\n", msg);
-
     if(step < 3 && msg != NULL && dest != NULL) {
         for (int i = 0; i < msgSize; i++) {
             if (msg[i] == ' ' || msg[i] == '\0' || msg[i] == '\r' || msg[i] == '\n') {
