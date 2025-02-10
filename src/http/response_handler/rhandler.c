@@ -118,6 +118,8 @@ void endpointGateway(int fd, char *endpoint) {
         return;
     }
 
+    fprintf(stdout, "DIR %s\n", dir);
+
     if(strcmp(endpoint, "/favicon.ico") == 0) {
         dir = strcat(dir, "favicon.ico");
         sendFavicon(rstream, dir);
@@ -126,6 +128,7 @@ void endpointGateway(int fd, char *endpoint) {
         return;
     } else if (strcmp(endpoint, "/") == 0) {
         sendIndex(rstream);
+        return;
     }
 
     DIR *d;
@@ -146,13 +149,15 @@ void endpointGateway(int fd, char *endpoint) {
                 fclose(rstream);
                 continue;
             }
-            int i = 0;
+            int i = 1;
+            aux[0] = '/';
             for (int j = 0; sdir->d_name[j] != '\0'; j++) {
                 char caux = sdir->d_name[j];
-                if(caux != '.' && caux != '\0' && caux != '\n' && caux != '\r') {
-                    aux[i] = caux;
-                    i++;
+                if(caux == '.' || caux == '\0' || caux == '\n' || caux == '\r') {
+                    break;
                 }
+                aux[i] = caux;
+                i++;
             }
             aux[i] = '\0';
 
@@ -171,10 +176,10 @@ void endpointGateway(int fd, char *endpoint) {
                     fclose(rstream);
                     return;
                 }
-                strcpy(absdir, dir);
-                strcat(absdir, sdir->d_name);
+                absdir = strcat(absdir, dir);
+                absdir = strcat(absdir, sdir->d_name);
+                fprintf(stdout, "%s\n", absdir);
                 sendResponse(rstream, absdir);
-                fclose(rstream);
                 free(absdir);
             }
             free(aux);
@@ -187,6 +192,7 @@ void endpointGateway(int fd, char *endpoint) {
         fputs("\r\n", rstream);
         fputs("Failed opening directory.\n", rstream);
         fflush(rstream);
+        fclose(rstream);
     }
     free(dir);
 }
@@ -201,6 +207,7 @@ void sendResponse(FILE* rstream, char* endpointdir) {
         fputs("\r\n", rstream);
         fputs("Failed opening file.\n", rstream);
         fflush(rstream);
+        fclose(rstream);
         return;
     }
 
@@ -215,6 +222,7 @@ void sendResponse(FILE* rstream, char* endpointdir) {
 
     fflush(rstream);
     fclose(f);
+    fclose(rstream);
 }
 
 void sendFavicon(FILE* rstream, char* dir) {

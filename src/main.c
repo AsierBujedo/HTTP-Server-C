@@ -14,6 +14,7 @@
 #include "http/response_handler/rhandler.h"
 
 #define MAXCONNS 10
+#define PORT 8000
 
 int lsocket;
 int *conn_pool;
@@ -53,7 +54,7 @@ void handleInterrupt(int sig) {
 
 int main() {
     int conn_s;
-    short int port = 12345;
+    short int port = PORT;
     struct sockaddr_in addr;
 
     signal(SIGINT, handleInterrupt);
